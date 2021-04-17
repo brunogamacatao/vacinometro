@@ -1,6 +1,9 @@
 package br.gov.saude.vacinometro;
 
-public class Pessoa {
+import java.io.Serializable;
+
+//implements Serializable => significa que a classe é GRAVÁVEL
+public class Pessoa implements Serializable {
 	private String cpf;
 	private Vacina vacinaQueTomou;
 	private int qtdDeDosesQueTomou;
@@ -11,8 +14,15 @@ public class Pessoa {
 		this.qtdDeDosesQueTomou = 0;
 	}
 	
-	public void vacinar() {
-		this.qtdDeDosesQueTomou++;
+	public void vacinar() throws Exception {
+		// Verificando se a pessoa ainda pode se vacinar
+		// Se a quantidade de doses que tomou for menor que a qtd máxima de doses da vacina
+		if (this.qtdDeDosesQueTomou < this.vacinaQueTomou.getQtdDeDoses()) {
+			this.qtdDeDosesQueTomou++; // Incrementa o contador de doses => vacina feita com sucesso!
+		} else {
+			// AQUI EU TENHO QUE LANÇAR UM ERRO !!!
+			throw new Exception("Essa pessoa já tomou o número total de doses");
+		}
 	}
 
 	public String getCpf() {

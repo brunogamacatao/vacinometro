@@ -1,5 +1,10 @@
 package br.gov.saude.vacinometro;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 public class Vacinometro {
@@ -11,6 +16,7 @@ public class Vacinometro {
 	public Vacinometro() {
 		vacinas = new ArrayList<>();
 		pessoas = new ArrayList<>();
+		carregar();
 	}
 	
 	public void exibirMenu() {
@@ -36,14 +42,17 @@ public class Vacinometro {
 			// Executando ações com base na opção escolhida pelo usuário
 			if (opcao == 1) { // Cadastrar uma vacina
 				cadastrarVacina();
+				salvar();
 			} else if (opcao == 2) { // Listar as vacinas cadastradas
 				listarVacinas();
 			} else if (opcao == 3) { // Cadastrar uma pessoa
 				cadastrarPessoa();
+				salvar();
 			} else if (opcao == 4) { // Listar as pessoas cadastradas
 				listarPessoas();
 			} else if (opcao == 5) {
 				vacinar();
+				salvar();
 			} else if (opcao == 9) {
 				// Sair do sistema
 				break; // saio do laço principal
@@ -69,8 +78,15 @@ public class Vacinometro {
 		}
 		
 		if (pessoaQueSeraVacinada != null) {
-			pessoaQueSeraVacinada.vacinar();
-			System.out.println("Pessoa vacinada com sucesso !");
+			try {
+				// Vou TENTAR vacinar
+				pessoaQueSeraVacinada.vacinar();
+				// se deu tudo certo, exibe uma mensagem de sucesso
+				System.out.println("Pessoa vacinada com sucesso !");
+			} catch (Exception e) {
+				// se deu uma exceção
+				System.out.println("Ocorreu um erro: " + e.getMessage()); // exibe uma mensagem
+			}
 		} else {
 			System.out.println("Não foi encontrada uma pessoa com o cpf informado");
 		}
@@ -87,10 +103,17 @@ public class Vacinometro {
 		}
 		System.out.print("Escolha a vacina: ");
 		int indiceVacina = Teclado.leInt();
-		Vacina vacinaEscolhida = vacinas.get(indiceVacina); // a vacina escolhida
-		// Eu posso criar um objeto da classe Pessoa
-		Pessoa novaPessoa = new Pessoa(cpf, vacinaEscolhida);
-		pessoas.add(novaPessoa); // Adiciono a nova pessoa ao array list de pessoas
+		
+		try {
+			// Vou tentar acessar a vacina escolhida pelo usuário
+			Vacina vacinaEscolhida = vacinas.get(indiceVacina); // a vacina escolhida
+			// Eu posso criar um objeto da classe Pessoa
+			Pessoa novaPessoa = new Pessoa(cpf, vacinaEscolhida);
+			pessoas.add(novaPessoa); // Adiciono a nova pessoa ao array list de pessoas
+		} catch (Exception e) {
+			// O usuário escolheu uma vacina que não existe
+			System.out.println("Você digitou um código inválido para a vacina");
+		}
 	}
 	
 	public void listarPessoas() {
@@ -118,6 +141,38 @@ public class Vacinometro {
 	public void listarVacinas() {
 		for (Vacina v : vacinas) {
 			System.out.println(v.getNome() + " - precisa tomar " + v.getQtdDeDoses() + " doses");
+		}
+	}
+	
+	public void salvar() {
+		System.out.println("Salvando os dados ...");
+		try {
+			// Salvando as vacinas em um arquivo
+			ObjectOutputStream oosVacinas = new ObjectOutputStream(new FileOutputStream(new File("vacinas.dat")));
+			oosVacinas.writeObject(vacinas);
+			oosVacinas.close();
+			
+			// Salvando as pessoas em um arquivo
+			ObjectOutputStream oosPessoas = new ObjectOutputStream(new FileOutputStream(new File("pessoas.dat")));
+			oosPessoas.writeObject(pessoas);
+			oosPessoas.close();
+		} catch (Exception e) {
+			System.out.println("Erro ao salvar: " + e.getMessage());
+		}
+	}
+	
+	public void carregar() {
+		System.out.println("Carregando os dados ...");
+		try {
+			ObjectInputStream oisVacinas = new ObjectInputStream(new FileInputStream(new File("vacinas.dat")));
+			vacinas = (ArrayList<Vacina>)oisVacinas.readObject();
+			oisVacinas.close();
+
+			ObjectInputStream oisPessoas = new ObjectInputStream(new FileInputStream(new File("pessoas.dat")));
+			pessoas = (ArrayList<Pessoa>)oisPessoas.readObject();
+			oisPessoas.close();
+		} catch (Exception e) {
+			System.out.println("Erro ao carregar: " + e.getMessage());
 		}
 	}
 	

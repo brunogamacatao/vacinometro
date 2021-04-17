@@ -1,6 +1,9 @@
 package br.gov.saude.vacinometro;
 
-public class Vacina {
+import java.io.Serializable;
+
+// implements Serializable => significa que a classe é GRAVÁVEL
+public class Vacina implements Serializable {
 	private String nome;
 	private int qtdDeDoses;
 
